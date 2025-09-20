@@ -178,10 +178,17 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('users.index') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}"
                                href="{{ route('users.index') }}">
-                                <i class="bi bi-list-ul"></i>
+                                <i class="bi bi-people"></i>
                                 Danh sách tài khoản
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('options.*') ? 'active' : '' }}"
+                               href="{{ route('options.index') }}">
+                                <i class="bi bi-person-gear"></i>
+                                Chỉ số tài khoản
                             </a>
                         </li>
                         <li class="nav-item mt-3">
