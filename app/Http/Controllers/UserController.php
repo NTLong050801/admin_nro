@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\GameUser;
+use App\Models\PlayerInventory;
+use App\Models\PlayerBox;
+use App\Models\ItemTemplate;
+use App\Models\ItemOptionTemplate;
+use App\Helpers\ItemOptionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -164,5 +169,35 @@ class UserController extends Controller
         $status = $user->active ? 'kích hoạt' : 'vô hiệu hóa';
         return redirect()->back()
             ->with('success', "Đã {$status} tài khoản thành công!");
+    }
+
+    /**
+     * Show user inventory (bags and boxes).
+     */
+    public function inventory($id)
+    {
+        $user = GameUser::findOrFail($id);
+
+        // Get inventory data
+        $inventory = PlayerInventory::where('playerId', $user->playerId)->first();
+        $box = PlayerBox::where('playerId', $user->playerId)->first();
+
+        // Get all item IDs to fetch templates
+        $itemIds = collect();
+
+        if ($inventory && $inventory->parsedItems) {
+            $itemIds = $itemIds->merge($inventory->parsedItems->pluck('id'));
+        }
+
+        if ($box && $box->parsedItems) {
+            $itemIds = $itemIds->merge($box->parsedItems->pluck('id'));
+        }
+
+        // Get item templates
+        $itemTemplates = ItemTemplate::whereIn('id', $itemIds->unique()->filter())
+            ->get()
+            ->keyBy('id');
+
+        return view('users.inventory', compact('user', 'inventory', 'box', 'itemTemplates'));
     }
 }

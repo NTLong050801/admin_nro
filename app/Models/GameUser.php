@@ -11,6 +11,13 @@ class GameUser extends Model
     use HasFactory;
 
     /**
+     * The connection name for the model.
+     *
+     * @var string
+     */
+    protected $connection = 'ngocrong_game';
+
+    /**
      * The table associated with the model.
      *
      * @var string

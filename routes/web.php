@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('users', UserController::class)->except(['create', 'store']);
     Route::post('/users/{user}/toggle-ban', [UserController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+    Route::get('/users/{user}/inventory', [UserController::class, 'inventory'])->name('users.inventory');
 
     // Option Management Routes
     Route::resource('options', OptionController::class)->only(['index', 'show', 'edit', 'update']);

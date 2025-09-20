@@ -163,6 +163,11 @@
                                            title="Xem chi tiết">
                                             <i class="bi bi-eye"></i>
                                         </a>
+                                        <a href="{{ route('users.inventory', $user) }}"
+                                           class="btn btn-outline-success"
+                                           title="Xem túi đồ">
+                                            <i class="bi bi-bag"></i>
+                                        </a>
                                         <a href="{{ route('users.edit', $user) }}"
                                            class="btn btn-outline-primary"
                                            title="Chỉnh sửa">
