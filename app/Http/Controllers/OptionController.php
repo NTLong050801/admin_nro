@@ -264,7 +264,7 @@ class OptionController extends Controller
         $userTask->updateTasks($completedTaskIds);
 
         // Update cTaskId in options table (next task to do)
-        
+
         $option->update([
             'ctaskId' => $nextTaskId
         ]);

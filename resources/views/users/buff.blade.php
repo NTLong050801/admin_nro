@@ -95,7 +95,7 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Cường hóa:</label>
-                                <input type="number" name="upgrade_level" class="form-control" min="0" max="16" value="0">
+                                <input type="number" name="upgrade_level" class="form-control" min="0" value="0">
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">&nbsp;</label>

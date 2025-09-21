@@ -263,7 +263,7 @@ class UserController extends Controller
             'location' => 'required|in:inventory,box',
             'slot' => 'required|integer|min:0',
             'buff_type' => 'required|in:upgrade,options,both',
-            'upgrade_level' => 'nullable|integer|min:0|max:16',
+            'upgrade_level' => 'nullable|integer|min:0',
             // Dynamic options validation
             'option_id' => 'nullable|array',
             'option_id.*' => 'integer|exists:ngocrong_data.itemoptiontemplate,id',
@@ -362,7 +362,7 @@ class UserController extends Controller
             'location' => 'required|in:inventory,box',
             'item_id' => 'required|integer|min:1',
             'quantity' => 'required|integer|min:1|max:999',
-            'upgrade_level' => 'nullable|integer|min:0|max:16',
+            'upgrade_level' => 'nullable|integer|min:0',
             // Dynamic options validation
             'option_id' => 'nullable|array',
             'option_id.*' => 'integer|exists:ngocrong_data.itemoptiontemplate,id',
@@ -577,7 +577,7 @@ class UserController extends Controller
         $user = GameUser::findOrFail($userId);
 
         $request->validate([
-            'upgrade_level' => 'nullable|integer|min:0|max:16',
+            'upgrade_level' => 'nullable|integer|min:0',
             'option_id' => 'nullable|array',
             'option_id.*' => 'integer|exists:ngocrong_data.itemoptiontemplate,id',
             'option_value' => 'nullable|array',

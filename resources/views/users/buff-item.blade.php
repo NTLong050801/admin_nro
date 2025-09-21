@@ -109,7 +109,7 @@
                                             Cường hóa (0-16):
                                         </label>
                                         <input type="number" name="upgrade_level" class="form-control"
-                                               min="0" max="16"
+                                               min="0"
                                                value="{{ $item['upgrade_level'] >= 0 ? $item['upgrade_level'] : 0 }}"
                                                placeholder="Nhập level cường hóa">
                                         <small class="text-muted">Hiện tại: +{{ $item['upgrade_level'] >= 0 ? $item['upgrade_level'] : 0 }}</small>
