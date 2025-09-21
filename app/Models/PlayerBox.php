@@ -79,11 +79,14 @@ class PlayerBox extends Model
             return [];
         }
 
-        return collect($items)->map(function ($item, $index) {
-            return $this->parseItem($item, $index);
-        })->filter(function ($item) {
-            return !empty($item['id']);
-        });
+        $parsedItems = [];
+        foreach ($items as $index => $item) {
+            $parsedItem = $this->parseItem($item, $index);
+            if ($parsedItem && !empty($parsedItem['id'])) {
+                $parsedItems[$index] = $parsedItem;
+            }
+        }
+        return $parsedItems;
     }
 
     /**
@@ -94,6 +97,9 @@ class PlayerBox extends Model
         if (!is_array($itemArray) || count($itemArray) < 30) {
             return null;
         }
+
+        // Extract enchants from raw data (indices 24-29)
+        $enchants = array_slice($itemArray, 24, 6);
 
         return [
             'slot' => $index,
@@ -108,7 +114,8 @@ class PlayerBox extends Model
             'hp' => $itemArray[8] ?? 0,
             'mp' => $itemArray[9] ?? 0,
             'options' => $itemArray[18] ?? [],
-            'enchants' => array_slice($itemArray, 24, 6),
+            'enchants' => $enchants,
+            'upgrade_level' => $enchants[0] ?? -1, // First enchant is upgrade level
             'raw' => $itemArray
         ];
     }

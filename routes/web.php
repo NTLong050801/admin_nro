@@ -34,6 +34,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user}/toggle-ban', [UserController::class, 'toggleBan'])->name('users.toggle-ban');
     Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
     Route::get('/users/{user}/inventory', [UserController::class, 'inventory'])->name('users.inventory');
+    Route::get('/users/{user}/buff', [UserController::class, 'showBuffForm'])->name('users.buff');
+    Route::post('/users/{user}/buff', [UserController::class, 'buffItems'])->name('users.buff.store');
+
+    // Dedicated item buff page
+    Route::get('/users/{user}/buff/{location}/{slot}', [UserController::class, 'showItemBuffPage'])->name('users.buff.item');
+    Route::post('/users/{user}/buff/{location}/{slot}', [UserController::class, 'updateItemBuff'])->name('users.buff.item.update');
+
+    // AJAX routes for item selection
+    Route::get('/api/items-by-planet/{planet}', [UserController::class, 'getItemsByPlanet'])->name('api.items-by-planet');
+    Route::get('/api/item-options', [UserController::class, 'getItemOptions'])->name('api.item-options');
 
     // Option Management Routes
     Route::resource('options', OptionController::class)->only(['index', 'show', 'edit', 'update']);

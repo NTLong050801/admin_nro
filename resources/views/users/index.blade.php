@@ -168,6 +168,11 @@
                                            title="Xem túi đồ">
                                             <i class="bi bi-bag"></i>
                                         </a>
+                                        <a href="{{ route('users.buff', $user) }}"
+                                           class="btn btn-outline-warning"
+                                           title="Thêm item">
+                                            <i class="bi bi-gift"></i>
+                                        </a>
                                         <a href="{{ route('users.edit', $user) }}"
                                            class="btn btn-outline-primary"
                                            title="Chỉnh sửa">

@@ -62,7 +62,7 @@
                             <i class="bi bi-bag me-2"></i>
                             Hành trang
                             @if($inventory && $inventory->parsedItems)
-                                <span class="badge bg-primary ms-2">{{ $inventory->parsedItems->count() }}</span>
+                                <span class="badge bg-primary ms-2">{{ count($inventory->parsedItems) }}</span>
                             @endif
                         </button>
                     </li>
@@ -72,7 +72,7 @@
                             <i class="bi bi-box me-2"></i>
                             Rương đồ
                             @if($box && $box->parsedItems)
-                                <span class="badge bg-info ms-2">{{ $box->parsedItems->count() }}</span>
+                                <span class="badge bg-info ms-2">{{ count($box->parsedItems) }}</span>
                             @endif
                         </button>
                     </li>
@@ -83,17 +83,17 @@
                 <div class="tab-content" id="inventoryTabContent">
                     <!-- Bag Tab -->
                     <div class="tab-pane fade show active" id="bag-pane" role="tabpanel" aria-labelledby="bag-tab">
-                        @if($inventory && $inventory->parsedItems && $inventory->parsedItems->count() > 0)
+                        @if($inventory && $inventory->parsedItems && count($inventory->parsedItems) > 0)
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">
                                             <i class="bi bi-bag me-2"></i>
-                                            Hành trang ({{ $inventory->parsedItems->count() }}/{{ $inventory->maxCount ?? 20 }})
+                                            Hành trang ({{ count($inventory->parsedItems) }}/{{ $inventory->maxCount ?? 20 }})
                                         </h6>
                                         <div class="progress" style="width: 200px;">
                                             <div class="progress-bar" role="progressbar"
-                                                 style="width: {{ ($inventory->parsedItems->count() / ($inventory->maxCount ?? 20)) * 100 }}%">
+                                                 style="width: {{ (count($inventory->parsedItems) / ($inventory->maxCount ?? 20)) * 100 }}%">
                                             </div>
                                         </div>
                                     </div>
@@ -229,17 +229,17 @@
 
                     <!-- Box Tab -->
                     <div class="tab-pane fade" id="box-pane" role="tabpanel" aria-labelledby="box-tab">
-                        @if($box && $box->parsedItems && $box->parsedItems->count() > 0)
+                        @if($box && $box->parsedItems && count($box->parsedItems) > 0)
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h6 class="mb-0">
                                             <i class="bi bi-box me-2"></i>
-                                            Rương đồ ({{ $box->parsedItems->count() }}/{{ $box->maxCount ?? 20 }})
+                                            Rương đồ ({{ count($box->parsedItems) }}/{{ $box->maxCount ?? 20 }})
                                         </h6>
                                         <div class="progress" style="width: 200px;">
                                             <div class="progress-bar bg-info" role="progressbar"
-                                                 style="width: {{ ($box->parsedItems->count() / ($box->maxCount ?? 20)) * 100 }}%">
+                                                 style="width: {{ (count($box->parsedItems) / ($box->maxCount ?? 20)) * 100 }}%">
                                             </div>
                                         </div>
                                     </div>
