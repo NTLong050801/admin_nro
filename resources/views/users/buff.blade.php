@@ -67,7 +67,7 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <label class="form-label">Vị trí:</label>
-                                <select name="location" class="form-select" required>
+                                <select name="location" class="form-select select2" required>
                                     <option value="">Chọn vị trí</option>
                                     <option value="inventory">Hành trang</option>
                                     <option value="box">Rương đồ</option>
@@ -75,7 +75,7 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">Hành tinh:</label>
-                                <select id="planet-select" class="form-select" required>
+                                <select id="planet-select" class="form-select select2" required>
                                     <option value="">Chọn hành tinh</option>
                                     <option value="0">Trái Đất</option>
                                     <option value="1">Namek</option>
@@ -85,7 +85,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Item:</label>
-                                <select id="item-select" name="item_id" class="form-select" required disabled>
+                                <select id="item-select" name="item_id" class="form-select select2" required disabled>
                                     <option value="">Chọn hành tinh trước</option>
                                 </select>
                             </div>
@@ -309,18 +309,39 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: function() {
+            return $(this).find('option:first').text();
+        },
+        allowClear: false
+    });
     const planetSelect = document.getElementById('planet-select');
     const itemSelect = document.getElementById('item-select');
 
-    planetSelect.addEventListener('change', function() {
-        const planet = this.value;
+    // Use Select2 event instead of DOM event
+    $('#planet-select').on('select2:select', function(e) {
+        const planet = e.params.data.id;
 
         // Reset item select
-        itemSelect.innerHTML = '<option value="">Đang tải...</option>';
-        itemSelect.disabled = true;
+        $('#item-select').html('<option value="">Đang tải...</option>').prop('disabled', true);
+        $('#item-select').select2('destroy').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Đang tải...',
+            allowClear: false
+        });
 
         if (!planet) {
-            itemSelect.innerHTML = '<option value="">Chọn hành tinh trước</option>';
+            $('#item-select').html('<option value="">Chọn hành tinh trước</option>').prop('disabled', true);
+            $('#item-select').select2('destroy').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Chọn hành tinh trước',
+                allowClear: false
+            });
             return;
         }
 
@@ -333,20 +354,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(items => {
-                itemSelect.innerHTML = '<option value="">Chọn item</option>';
-
+                // Build options HTML
+                let optionsHtml = '<option value="">Chọn item</option>';
                 items.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = item.display_text;
-                    itemSelect.appendChild(option);
+                    optionsHtml += `<option value="${item.id}">${item.display_text}</option>`;
                 });
 
-                itemSelect.disabled = false;
+                // Update select and reinitialize Select2
+                $('#item-select').html(optionsHtml).prop('disabled', false);
+                $('#item-select').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: 'Chọn item',
+                    allowClear: false
+                });
             })
             .catch(error => {
                 console.error('Error fetching items:', error);
-                itemSelect.innerHTML = '<option value="">Lỗi tải dữ liệu</option>';
+                $('#item-select').html('<option value="">Lỗi tải dữ liệu</option>').prop('disabled', true);
+                $('#item-select').select2('destroy').select2({
+                    theme: 'bootstrap-5',
+                    width: '100%',
+                    placeholder: 'Lỗi tải dữ liệu',
+                    allowClear: false
+                });
 
                 // Show error message
                 const alert = document.createElement('div');
@@ -356,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Không thể tải danh sách items. Vui lòng thử lại.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
-                planetSelect.parentNode.appendChild(alert);
+                $('#planet-select').parent().append(alert);
 
                 // Auto dismiss after 5 seconds
                 setTimeout(() => {
@@ -413,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function() {
         optionRow.className = 'col-md-6 mb-2 option-row';
         optionRow.innerHTML = `
             <div class="input-group input-group-sm">
-                <select name="${namePrefix}_id[]" class="form-select form-select-sm option-select" required>
+                <select name="${namePrefix}_id[]" class="form-select form-select-sm option-select select2-dynamic" required>
                     <option value="">Chọn thuộc tính</option>
                     ${availableOptions.map(opt =>
                         `<option value="${opt.id}">${opt.display_name}</option>`
@@ -428,6 +459,14 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         container.appendChild(optionRow);
+
+        // Initialize Select2 for the new option select
+        $(optionRow).find('.select2-dynamic').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Chọn thuộc tính',
+            allowClear: false
+        });
     }
 
     // Remove option functionality
@@ -435,6 +474,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('remove-option-btn') || e.target.parentElement.classList.contains('remove-option-btn')) {
             const optionRow = e.target.closest('.option-row');
             if (optionRow) {
+                // Destroy Select2 before removing
+                $(optionRow).find('.select2-dynamic').select2('destroy');
                 optionRow.remove();
             }
         }

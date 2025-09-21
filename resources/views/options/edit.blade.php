@@ -422,6 +422,229 @@
                 </div>
             </div>
         </div>
+
+        <!-- Task Management Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-task me-2"></i>
+                    Quản lý nhiệm vụ
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('options.update-tasks', $option->playerId) }}">
+                    @csrf
+
+                    <div class="mb-3">
+                        <p class="text-muted small mb-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Chọn các nhiệm vụ đã hoàn thành cho nhân vật này
+                        </p>
+
+                        <!-- Search and Controls -->
+                        <div class="mb-3">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="taskSearch"
+                                       placeholder="Tìm kiếm nhiệm vụ...">
+                                <button type="button" class="btn btn-outline-secondary" id="selectAllTasks">
+                                    <i class="bi bi-check-all"></i>
+                                    Chọn tất cả
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" id="clearAllTasks">
+                                    <i class="bi bi-x-square"></i>
+                                    Bỏ chọn
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="task-list" style="max-height: 400px; overflow-y: auto;" id="taskContainer">
+                            @forelse($allTasks as $task)
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="completed_tasks[]"
+                                           value="{{ $task->taskId }}"
+                                           id="task_{{ $task->taskId }}"
+                                           {{ in_array($task->taskId, $completedTaskIds) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="task_{{ $task->taskId }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ $task->display_name }}</strong>
+                                                @if($task->hasSubTasks())
+                                                    <span class="badge bg-info ms-1">{{ $task->sub_tasks_count }} bước</span>
+                                                @endif
+                                                <br>
+                                                <small class="text-muted">{{ $task->formatted_detail }}</small>
+                                                <br>
+                                                <span class="badge bg-primary">Nhiệm vụ</span>
+                                            </div>
+                                            @if($task->taskId == $currentTaskId)
+                                                <span class="badge bg-primary">
+                                                    <i class="bi bi-play-fill"></i>
+                                                    Tiếp theo
+                                                </span>
+                                            @elseif(in_array($task->taskId, $completedTaskIds))
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-lg"></i>
+                                                    Hoàn thành
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </label>
+                                </div>
+                                <hr class="my-2">
+                            @empty
+                                <div class="text-center text-muted py-3">
+                                    <i class="bi bi-inbox display-4"></i>
+                                    <p class="mt-2">Không có nhiệm vụ nào trong hệ thống</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i class="bi bi-play-fill me-1"></i>
+                            Task tiếp theo: <span class="fw-bold" id="nextTaskDisplay">{{ $currentTaskId }}</span>
+                            <br>
+                            <i class="bi bi-check-square me-1"></i>
+                            Đã hoàn thành: <span class="fw-bold" id="completedCount">{{ count($completedTaskIds) }}</span> / {{ $allTasks->count() }}
+                        </div>
+                        <button type="submit" class="btn btn-success btn-sm">
+                            <i class="bi bi-check-lg me-1"></i>
+                            Cập nhật nhiệm vụ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const taskSearch = document.getElementById('taskSearch');
+    const taskContainer = document.getElementById('taskContainer');
+    const selectAllBtn = document.getElementById('selectAllTasks');
+    const clearAllBtn = document.getElementById('clearAllTasks');
+
+    // Search functionality
+    if (taskSearch && taskContainer) {
+        taskSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const taskItems = taskContainer.querySelectorAll('.form-check');
+
+            taskItems.forEach(item => {
+                const label = item.querySelector('.form-check-label');
+                const text = label.textContent.toLowerCase();
+
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    item.nextElementSibling.style.display = 'block'; // Show hr
+                } else {
+                    item.style.display = 'none';
+                    item.nextElementSibling.style.display = 'none'; // Hide hr
+                }
+            });
+        });
+    }
+
+    // Select all functionality
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            const visibleCheckboxes = taskContainer.querySelectorAll('.form-check:not([style*="display: none"]) input[type="checkbox"]');
+            visibleCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateTaskCount();
+        });
+    }
+
+    // Clear all functionality
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            const visibleCheckboxes = taskContainer.querySelectorAll('.form-check:not([style*="display: none"]) input[type="checkbox"]');
+            visibleCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateTaskCount();
+        });
+    }
+
+    // Update task count when checkboxes change
+    function updateTaskCount() {
+        const totalTasks = taskContainer.querySelectorAll('input[type="checkbox"]').length;
+        const completedTasks = taskContainer.querySelectorAll('input[type="checkbox"]:checked').length;
+
+        const countElement = document.querySelector('.fw-bold');
+        if (countElement) {
+            countElement.textContent = completedTasks;
+        }
+    }
+
+    // Add event listeners to all checkboxes for auto-check logic
+    taskContainer.addEventListener('change', function(e) {
+        if (e.target.type === 'checkbox') {
+            handleTaskCheck(e.target);
+            updateTaskCount();
+        }
+    });
+
+    // Auto-check logic: when checking a task, auto-check all previous tasks
+    function handleTaskCheck(checkbox) {
+        const taskId = parseInt(checkbox.value);
+        const allCheckboxes = taskContainer.querySelectorAll('input[type="checkbox"]');
+
+        if (checkbox.checked) {
+            // When checking a task, check all tasks with lower IDs
+            allCheckboxes.forEach(cb => {
+                const cbTaskId = parseInt(cb.value);
+                if (cbTaskId <= taskId) {
+                    cb.checked = true;
+                }
+            });
+        } else {
+            // When unchecking a task, uncheck all tasks with higher IDs
+            allCheckboxes.forEach(cb => {
+                const cbTaskId = parseInt(cb.value);
+                if (cbTaskId >= taskId) {
+                    cb.checked = false;
+                }
+            });
+        }
+    }
+
+    // Update task count and next task display
+    function updateTaskCount() {
+        const checkedBoxes = taskContainer.querySelectorAll('input[type="checkbox"]:checked');
+        const completedCountElement = document.getElementById('completedCount');
+        const nextTaskElement = document.getElementById('nextTaskDisplay');
+
+        if (completedCountElement) {
+            completedCountElement.textContent = checkedBoxes.length;
+        }
+
+        // Find highest checked task ID, next task is highest + 1
+        let highestTaskId = -1;
+        checkedBoxes.forEach(cb => {
+            const taskId = parseInt(cb.value);
+            if (taskId > highestTaskId) {
+                highestTaskId = taskId;
+            }
+        });
+
+        const nextTaskId = highestTaskId + 1;
+        if (nextTaskElement) {
+            nextTaskElement.textContent = nextTaskId;
+        }
+    }
+});
+</script>
+@endpush

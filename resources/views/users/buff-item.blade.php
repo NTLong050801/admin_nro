@@ -135,7 +135,7 @@
                                             @foreach($item['options'] as $index => $option)
                                                 <div class="row mb-2 option-row">
                                                     <div class="col-md-6">
-                                                        <select name="option_id[]" class="form-select option-select" required>
+                                                        <select name="option_id[]" class="form-select option-select select2" required>
                                                             <option value="">Chọn thuộc tính</option>
                                                             @foreach($itemOptions as $optionTemplate)
                                                                 <option value="{{ $optionTemplate->id }}"
@@ -186,6 +186,15 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2
+    $('.select2').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: function() {
+            return $(this).find('option:first').text();
+        },
+        allowClear: false
+    });
     let optionCounter = {{ count($item['options'] ?? []) }};
 
     // Add option functionality
@@ -198,6 +207,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('remove-option-btn') || e.target.parentElement.classList.contains('remove-option-btn')) {
             const optionRow = e.target.closest('.option-row');
             if (optionRow) {
+                // Destroy Select2 before removing
+                $(optionRow).find('.select2-dynamic').select2('destroy');
                 optionRow.remove();
             }
         }
@@ -216,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         optionRow.innerHTML = `
             <div class="col-md-6">
-                <select name="option_id[]" class="form-select option-select" required>
+                <select name="option_id[]" class="form-select option-select select2-dynamic" required>
                     ${optionsHtml}
                 </select>
             </div>
@@ -232,6 +243,15 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         container.appendChild(optionRow);
+
+        // Initialize Select2 for the new option select
+        $(optionRow).find('.select2-dynamic').select2({
+            theme: 'bootstrap-5',
+            width: '100%',
+            placeholder: 'Chọn thuộc tính',
+            allowClear: false
+        });
+
         optionCounter++;
     }
 });

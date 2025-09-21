@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('options', OptionController::class)->only(['index', 'show', 'edit', 'update']);
     Route::post('/options/{option}/reset-stats', [OptionController::class, 'resetStats'])->name('options.reset-stats');
     Route::post('/options/{option}/teleport', [OptionController::class, 'teleport'])->name('options.teleport');
+    Route::post('/options/{option}/update-tasks', [OptionController::class, 'updateTasks'])->name('options.update-tasks');
 });
 
 require __DIR__.'/auth.php';

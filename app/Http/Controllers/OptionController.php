@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Option;
 use App\Models\GameUser;
+use App\Models\Task;
+use App\Models\UserTask;
 use Illuminate\Http\Request;
 
 class OptionController extends Controller
@@ -73,7 +75,22 @@ class OptionController extends Controller
         $option = Option::findOrFail($id);
         $option->user = GameUser::where('playerId', $option->playerId)->first();
 
-        return view('options.edit', compact('option'));
+        // Load all available tasks
+        $allTasks = Task::orderBy('taskId')->get();
+
+        // Get current task ID from cTaskId column (this is the NEXT task to do)
+        $currentTaskId = $option->cTaskId ?? 0;
+
+        // Load user's completed tasks from arrtasks
+        $userTask = UserTask::where('playerId', $option->playerId)->first();
+        $completedTaskIds = $userTask ? $userTask->completed_task_ids : [];
+
+        // If no arrtasks record but cTaskId > 0, then tasks 0 to (cTaskId-1) are completed
+        if (!$userTask && $currentTaskId > 0) {
+            $completedTaskIds = range(0, $currentTaskId - 1);
+        }
+
+        return view('options.edit', compact('option', 'allTasks', 'completedTaskIds', 'currentTaskId', 'userTask'));
     }
 
     /**
@@ -211,5 +228,48 @@ class OptionController extends Controller
 
         return redirect()->back()
             ->with('success', 'Đã dịch chuyển nhân vật đến vị trí mới!');
+    }
+
+    /**
+     * Update user tasks (completed tasks).
+     */
+    public function updateTasks(Request $request, $id)
+    {
+        $option = Option::findOrFail($id);
+
+        $validated = $request->validate([
+            'completed_tasks' => ['nullable', 'array'],
+            'completed_tasks.*' => ['integer', 'exists:ngocrong_data.task,taskId']
+        ]);
+
+        $completedTaskIds = $validated['completed_tasks'] ?? [];
+
+        // Find the highest completed task ID
+        $highestCompletedTaskId = empty($completedTaskIds) ? -1 : max($completedTaskIds);
+
+        // Next task ID is highest completed + 1
+        $nextTaskId = $highestCompletedTaskId + 1;
+
+        // Update arrtasks with completed tasks
+        $userTask = UserTask::where('playerId', $option->playerId)->first();
+
+        if (!$userTask) {
+            $userTask = UserTask::create([
+                'playerId' => $option->playerId,
+                'arrTask' => []
+            ]);
+        }
+
+        // Update the completed tasks in arrtasks
+        $userTask->updateTasks($completedTaskIds);
+
+        // Update cTaskId in options table (next task to do)
+        
+        $option->update([
+            'ctaskId' => $nextTaskId
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Đã cập nhật nhiệm vụ thành công!');
     }
 }
